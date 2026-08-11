@@ -1,0 +1,25 @@
+# Python
+.venv/
+__pycache__/
+*.pyc
+*.pyo
+.pytest_cache/
+
+# Environment
+.env
+.env.*
+!.env.example
+
+# FolderRAG runtime data
+*.db
+qdrant_data/
+data/
+
+# Frontend
+node_modules/
+dist/
+
+# IDE / OS
+.vscode/
+.DS_Store
+Thumbs.db
