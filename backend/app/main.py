@@ -1,10 +1,17 @@
-from fastapi import FastAPI
+﻿from fastapi import FastAPI
 
 from .database import Base, engine
-from .routers import folders, index
+from .routers import (
+	folders,
+	index,
+	retrieval,
+	vectors,
+)
 
 
-Base.metadata.create_all(bind=engine)
+Base.metadata.create_all(
+	bind=engine
+)
 
 
 app = FastAPI(
@@ -13,8 +20,21 @@ app = FastAPI(
 )
 
 
-app.include_router(folders.router)
-app.include_router(index.router)
+app.include_router(
+	folders.router
+)
+
+app.include_router(
+	index.router
+)
+
+app.include_router(
+	vectors.router
+)
+
+app.include_router(
+	retrieval.router
+)
 
 
 @app.get("/api/health")
