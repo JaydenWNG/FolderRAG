@@ -3,6 +3,7 @@ from dataclasses import dataclass
 
 
 DEFAULT_MIN_SCORE = 0.20
+DEFAULT_CONTEXT_SCORE_MARGIN = 0.15
 
 
 def get_min_score() -> float:
@@ -24,6 +25,39 @@ def get_min_score() -> float:
 			value,
 			1.0,
 		),
+	)
+
+
+def get_context_score_margin() -> float:
+	raw_value = os.getenv(
+		"FOLDERRAG_CONTEXT_SCORE_MARGIN"
+	)
+
+	if raw_value is None:
+		return DEFAULT_CONTEXT_SCORE_MARGIN
+
+	try:
+		value = float(raw_value)
+	except ValueError:
+		return DEFAULT_CONTEXT_SCORE_MARGIN
+
+	return max(
+		0.0,
+		min(
+			value,
+			2.0,
+		),
+	)
+
+
+def get_context_threshold(
+	strongest_score: float,
+	evidence_threshold: float,
+) -> float:
+	return max(
+		evidence_threshold,
+		strongest_score
+		- get_context_score_margin(),
 	)
 
 

@@ -2,6 +2,7 @@
 
 from .database import Base, engine
 from .routers import (
+	ask,
 	folders,
 	index,
 	retrieval,
@@ -34,6 +35,10 @@ app.include_router(
 
 app.include_router(
 	retrieval.router
+)
+
+app.include_router(
+	ask.router
 )
 
 
