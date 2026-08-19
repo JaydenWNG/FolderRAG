@@ -1,13 +1,22 @@
 import os
 from pathlib import Path
+from tkinter import Tk, filedialog
 
-from fastapi import APIRouter, Depends, HTTPException, status
+from fastapi import (
+	APIRouter,
+	Depends,
+	HTTPException,
+	status,
+)
 from sqlalchemy import select
 from sqlalchemy.orm import Session
 
 from ..database import get_db
 from ..models import RegisteredFolder
-from ..schemas import FolderCreate, FolderRead
+from ..schemas import (
+	FolderCreate,
+	FolderRead,
+)
 
 
 router = APIRouter(
@@ -16,28 +25,101 @@ router = APIRouter(
 )
 
 
-def normalize_path(path: Path) -> str:
-	return os.path.normcase(str(path.resolve()))
+def normalize_path(
+	path: Path,
+) -> str:
+	return os.path.normcase(
+		str(path.resolve())
+	)
 
 
-def paths_overlap(first: Path, second: Path) -> bool:
-	first_normalized = normalize_path(first)
-	second_normalized = normalize_path(second)
+def paths_overlap(
+	first: Path,
+	second: Path,
+) -> bool:
+	first_normalized = normalize_path(
+		first
+	)
+
+	second_normalized = normalize_path(
+		second
+	)
 
 	try:
 		common = os.path.normcase(
-			os.path.commonpath([first_normalized, second_normalized])
+			os.path.commonpath(
+				[
+					first_normalized,
+					second_normalized,
+				]
+			)
 		)
+
 	except ValueError:
 		return False
 
-	return common in {first_normalized, second_normalized}
+	return common in {
+		first_normalized,
+		second_normalized,
+	}
 
 
-@router.get("", response_model=list[FolderRead])
-def list_folders(db: Session = Depends(get_db)):
-	statement = select(RegisteredFolder).order_by(RegisteredFolder.name)
-	return db.scalars(statement).all()
+@router.get(
+	"",
+	response_model=list[FolderRead],
+)
+def list_folders(
+	db: Session = Depends(get_db),
+):
+	statement = (
+		select(RegisteredFolder)
+		.order_by(
+			RegisteredFolder.name
+		)
+	)
+
+	return db.scalars(
+		statement
+	).all()
+
+
+@router.post("/pick")
+def pick_folder():
+	root = Tk()
+
+	root.withdraw()
+
+	root.attributes(
+		"-topmost",
+		True,
+	)
+
+	try:
+		selected = (
+			filedialog.askdirectory(
+				title=(
+					"Select a folder "
+					"for FolderRAG"
+				),
+				mustexist=True,
+			)
+		)
+
+	finally:
+		root.destroy()
+
+	if not selected:
+		return {
+			"selected": False,
+			"path": None,
+		}
+
+	return {
+		"selected": True,
+		"path": str(
+			Path(selected).resolve()
+		),
+	}
 
 
 @router.post(
@@ -49,47 +131,81 @@ def register_folder(
 	payload: FolderCreate,
 	db: Session = Depends(get_db),
 ):
-	folder = Path(payload.path).expanduser()
+	folder = Path(
+		payload.path
+	).expanduser()
 
 	if not folder.exists():
 		raise HTTPException(
 			status_code=400,
-			detail="Folder does not exist.",
+			detail=(
+				"Folder does not exist."
+			),
 		)
 
 	if not folder.is_dir():
 		raise HTTPException(
 			status_code=400,
-			detail="Path is not a folder.",
+			detail=(
+				"Path is not a folder."
+			),
 		)
 
 	folder = folder.resolve()
-	normalized = normalize_path(folder)
 
-	existing_folders = db.scalars(select(RegisteredFolder)).all()
+	normalized = normalize_path(
+		folder
+	)
+
+	existing_folders = db.scalars(
+		select(RegisteredFolder)
+	).all()
 
 	for existing in existing_folders:
-		existing_path = Path(existing.path)
+		existing_path = Path(
+			existing.path
+		)
 
-		if normalize_path(existing_path) == normalized:
+		if (
+			normalize_path(
+				existing_path
+			)
+			== normalized
+		):
 			raise HTTPException(
 				status_code=409,
-				detail="Folder is already registered.",
+				detail=(
+					"Folder is already "
+					"registered."
+				),
 			)
 
-		if paths_overlap(folder, existing_path):
+		if paths_overlap(
+			folder,
+			existing_path,
+		):
 			raise HTTPException(
 				status_code=409,
-				detail="Registered folders cannot overlap.",
+				detail=(
+					"Registered folders "
+					"cannot overlap."
+				),
 			)
 
 	registered = RegisteredFolder(
-		name=folder.name or str(folder),
+		name=(
+			folder.name
+			or str(folder)
+		),
 		path=str(folder),
 	)
 
 	db.add(registered)
+
 	db.commit()
-	db.refresh(registered)
+
+	db.refresh(
+		registered
+	)
 
 	return registered
