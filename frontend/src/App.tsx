@@ -30,6 +30,8 @@ type Folder as FolderType,
 type VectorStatus,
 } from "./api";
 
+import DocumentsView from "./DocumentsView";
+
 import "./App.css";
 
 
@@ -39,7 +41,19 @@ FolderType & {
 };
 
 
+type ActiveView =
+| "sources"
+| "documents";
+
+
 function App() {
+const [
+	activeView,
+	setActiveView,
+] = useState<ActiveView>(
+	"sources",
+);
+
 const [
 	folders,
 	setFolders,
@@ -348,11 +362,20 @@ return (
 		Workspace
 		</div>
 
+
 		<nav className="navigation">
 		<button
 			className={
-			"nav-item active"
+			activeView
+			=== "sources"
+				? "nav-item active"
+				: "nav-item"
 			}
+			onClick={() => {
+			setActiveView(
+				"sources",
+			);
+			}}
 		>
 			<LibraryBig
 			size={18}
@@ -362,6 +385,7 @@ return (
 			Knowledge Sources
 			</span>
 		</button>
+
 
 		<button
 			className="nav-item"
@@ -375,8 +399,19 @@ return (
 			</span>
 		</button>
 
+
 		<button
-			className="nav-item"
+			className={
+			activeView
+			=== "documents"
+				? "nav-item active"
+				: "nav-item"
+			}
+			onClick={() => {
+			setActiveView(
+				"documents",
+			);
+			}}
 		>
 			<Files
 			size={18}
@@ -392,6 +427,7 @@ return (
 		<div className="sidebar-section-label system-label">
 		System
 		</div>
+
 
 		<nav className="navigation">
 		<button
@@ -429,430 +465,430 @@ return (
 
 
 	<main className="main-content">
-		<header className="page-header">
-		<div>
-			<p className="eyebrow">
-			Your Knowledge
-			</p>
+		{activeView === "documents" ? (
+		<DocumentsView
+			folders={folders}
+		/>
+		) : (
+		<>
+			<header className="page-header">
+			<div>
+				<p className="eyebrow">
+				Your Knowledge
+				</p>
 
-			<h1>
-			Knowledge Sources
-			</h1>
+				<h1>
+				Knowledge Sources
+				</h1>
 
-			<p className="subtitle">
-			Organize and explore
-			the folders available
-			to your local
-			knowledge engine.
-			</p>
-		</div>
+				<p className="subtitle">
+				Organize and explore
+				the folders available
+				to your local
+				knowledge engine.
+				</p>
+			</div>
 
-		<button
-			className="primary-button"
-			onClick={
-			() => {
+
+			<button
+				className="primary-button"
+				onClick={() => {
 				void addFolder();
-			}
-			}
-			disabled={
-			addingFolder
-			}
-		>
-			{addingFolder ? (
-			<LoaderCircle
-				size={17}
-				className="spin"
-			/>
-			) : (
-			<Plus size={17} />
-			)}
+				}}
+				disabled={
+				addingFolder
+				}
+			>
+				{addingFolder ? (
+				<LoaderCircle
+					size={17}
+					className="spin"
+				/>
+				) : (
+				<Plus size={17} />
+				)}
 
-			{addingFolder
-			? "Adding..."
-			: "Add folder"}
-		</button>
-		</header>
-
-
-		<section className="summary-grid">
-		<article className="summary-card">
-			<div className="summary-icon">
-			<FolderOpen
-				size={19}
-			/>
-			</div>
-
-			<div>
-			<span>
-				Sources
-			</span>
-
-			<strong>
-				{folders.length}
-			</strong>
-			</div>
-		</article>
+				{addingFolder
+				? "Adding..."
+				: "Add folder"}
+			</button>
+			</header>
 
 
-		<article className="summary-card">
-			<div className="summary-icon">
-			<Files size={19} />
-			</div>
-
-			<div>
-			<span>
-				Tracked files
-			</span>
-
-			<strong>
-				{totalDocuments}
-			</strong>
-			</div>
-		</article>
-
-
-		<article className="summary-card">
-			<div className="summary-icon">
-			<BookOpen
-				size={19}
-			/>
-			</div>
-
-			<div>
-			<span>
-				Knowledge chunks
-			</span>
-
-			<strong>
-				{totalChunks}
-			</strong>
-			</div>
-		</article>
-
-
-		<article className="summary-card">
-			<div className="summary-icon">
-			<HardDrive
-				size={19}
-			/>
-			</div>
-
-			<div>
-			<span>
-				Pending
-			</span>
-
-			<strong>
-				{totalPending}
-			</strong>
-			</div>
-		</article>
-		</section>
-
-
-		<section className="sources-section">
-		<div className="section-header">
-			<div>
-			<h2>
-				Indexed folders
-			</h2>
-
-			<p>
-				Local folders
-				currently available
-				for retrieval.
-			</p>
-			</div>
-
-			<span className="source-count">
-			{folders.length}
-			{" "}
-			{folders.length === 1
-				? "source"
-				: "sources"}
-			</span>
-		</div>
-
-
-		{notice && (
-			<div className="notice-card">
-			<Check size={15} />
-			{notice}
-			</div>
-		)}
-
-
-		{loading && (
-			<div className="message-card">
-			Loading your
-			knowledge sources...
-			</div>
-		)}
-
-
-		{error && (
-			<div className="message-card error">
-			{error}
-			</div>
-		)}
-
-
-		{!loading
-			&& !error
-			&& folders.length
-			=== 0
-			&& (
-			<div className="empty-state">
-				<div className="empty-icon">
+			<section className="summary-grid">
+			<article className="summary-card">
+				<div className="summary-icon">
 				<FolderOpen
-					size={25}
+					size={19}
 				/>
 				</div>
 
-				<h3>
-				No knowledge
-				sources yet
-				</h3>
+				<div>
+				<span>
+					Sources
+				</span>
+
+				<strong>
+					{folders.length}
+				</strong>
+				</div>
+			</article>
+
+
+			<article className="summary-card">
+				<div className="summary-icon">
+				<Files size={19} />
+				</div>
+
+				<div>
+				<span>
+					Tracked files
+				</span>
+
+				<strong>
+					{totalDocuments}
+				</strong>
+				</div>
+			</article>
+
+
+			<article className="summary-card">
+				<div className="summary-icon">
+				<BookOpen
+					size={19}
+				/>
+				</div>
+
+				<div>
+				<span>
+					Knowledge chunks
+				</span>
+
+				<strong>
+					{totalChunks}
+				</strong>
+				</div>
+			</article>
+
+
+			<article className="summary-card">
+				<div className="summary-icon">
+				<HardDrive
+					size={19}
+				/>
+				</div>
+
+				<div>
+				<span>
+					Pending
+				</span>
+
+				<strong>
+					{totalPending}
+				</strong>
+				</div>
+			</article>
+			</section>
+
+
+			<section className="sources-section">
+			<div className="section-header">
+				<div>
+				<h2>
+					Indexed folders
+				</h2>
 
 				<p>
-				Add a local
-				folder to begin
-				building your
-				searchable
-				knowledge index.
+					Local folders
+					currently available
+					for retrieval.
 				</p>
+				</div>
 
-				<button
-				className={
-					"secondary-button"
-				}
-				onClick={
-					() => {
-					void addFolder();
-					}
-				}
-				disabled={
-					addingFolder
-				}
-				>
-				<Plus
-					size={16}
-				/>
-
-				Add your first
-				folder
-				</button>
+				<span className="source-count">
+				{folders.length}
+				{" "}
+				{folders.length === 1
+					? "source"
+					: "sources"}
+				</span>
 			</div>
+
+
+			{notice && (
+				<div className="notice-card">
+				<Check size={15} />
+
+				{notice}
+				</div>
 			)}
 
 
-		<div className="folder-list">
-			{folders.map(
-			(folder) => {
-				const indexed =
-				folder.status
-					?.document_statuses
-					?.indexed
-				?? 0;
+			{loading && (
+				<div className="message-card">
+				Loading your
+				knowledge sources...
+				</div>
+			)}
 
-				const pending =
-				folder.status
-					?.document_statuses
-					?.pending
-				?? 0;
 
-				const deleted =
-				folder.status
-					?.document_statuses
-					?.deleted
-				?? 0;
+			{error && (
+				<div className="message-card error">
+				{error}
+				</div>
+			)}
 
-				const chunks =
-				folder.status
-					?.collection_points
-				?? 0;
 
-				const syncing =
-				syncingFolderId
-				=== folder.id;
-
-				const ready =
-				pending === 0
-				&& !syncing;
-
-				return (
-				<article
-					className={
-					"folder-card"
-					}
-					key={folder.id}
-				>
-					<div className="folder-card-top">
-					<div className="folder-identity">
-						<div className="folder-icon">
-						<FolderOpen
-							size={22}
-						/>
-						</div>
-
-						<div>
-						<div className="folder-title-row">
-							<h3>
-							{
-								folder.name
-							}
-							</h3>
-
-							<span
-							className={
-								ready
-								? "ready-badge"
-								: (
-									"pending-badge"
-								)
-							}
-							>
-							{syncing ? (
-								<>
-								<LoaderCircle
-									size={13}
-									className="spin"
-								/>
-
-								Syncing
-								</>
-							) : ready ? (
-								<>
-								<CircleCheck
-									size={13}
-								/>
-
-								Ready
-								</>
-							) : (
-								<>
-								{pending}
-								{" "}
-								pending
-								</>
-							)}
-							</span>
-						</div>
-
-						<p className="folder-path">
-							{folder.path}
-						</p>
-						</div>
+			{!loading
+				&& !error
+				&& folders.length === 0
+				&& (
+				<div className="empty-state">
+					<div className="empty-icon">
+					<FolderOpen
+						size={25}
+					/>
 					</div>
+
+					<h3>
+					No knowledge
+					sources yet
+					</h3>
+
+					<p>
+					Add a local folder
+					to begin building
+					your searchable
+					knowledge index.
+					</p>
 
 					<button
-						className="sync-button"
-						onClick={
-						() => {
-							void syncFolder(
-							folder.id,
-							);
-						}
-						}
-						disabled={
-						syncingFolderId
-						!== null
-						}
+					className="secondary-button"
+					onClick={() => {
+						void addFolder();
+					}}
+					disabled={
+						addingFolder
+					}
 					>
-						{syncing ? (
-						<LoaderCircle
-							size={15}
-							className="spin"
-						/>
-						) : (
-						<RefreshCw
-							size={15}
-						/>
-						)}
+					<Plus
+						size={16}
+					/>
 
-						{syncing
-						? "Syncing..."
-						: "Sync"}
+					Add your first
+					folder
 					</button>
-					</div>
+				</div>
+				)}
 
 
-					<div className="folder-divider" />
+			<div className="folder-list">
+				{folders.map(
+				(folder) => {
+					const indexed =
+					folder.status
+						?.document_statuses
+						?.indexed
+					?? 0;
+
+					const pending =
+					folder.status
+						?.document_statuses
+						?.pending
+					?? 0;
+
+					const deleted =
+					folder.status
+						?.document_statuses
+						?.deleted
+					?? 0;
+
+					const chunks =
+					folder.status
+						?.collection_points
+					?? 0;
+
+					const syncing =
+					syncingFolderId
+					=== folder.id;
+
+					const ready =
+					pending === 0
+					&& !syncing;
 
 
-					<div className="folder-stats">
-					<div className="folder-stat">
+					return (
+					<article
+						className="folder-card"
+						key={folder.id}
+					>
+						<div className="folder-card-top">
+						<div className="folder-identity">
+							<div className="folder-icon">
+							<FolderOpen
+								size={22}
+							/>
+							</div>
+
+							<div>
+							<div className="folder-title-row">
+								<h3>
+								{folder.name}
+								</h3>
+
+								<span
+								className={
+									ready
+									? "ready-badge"
+									: "pending-badge"
+								}
+								>
+								{syncing ? (
+									<>
+									<LoaderCircle
+										size={13}
+										className="spin"
+									/>
+
+									Syncing
+									</>
+								) : ready ? (
+									<>
+									<CircleCheck
+										size={13}
+									/>
+
+									Ready
+									</>
+								) : (
+									<>
+									{pending}
+									{" "}
+									pending
+									</>
+								)}
+								</span>
+							</div>
+
+							<p className="folder-path">
+								{folder.path}
+							</p>
+							</div>
+						</div>
+
+
+						<button
+							className="sync-button"
+							onClick={() => {
+							void syncFolder(
+								folder.id,
+							);
+							}}
+							disabled={
+							syncingFolderId
+							!== null
+							}
+						>
+							{syncing ? (
+							<LoaderCircle
+								size={15}
+								className="spin"
+							/>
+							) : (
+							<RefreshCw
+								size={15}
+							/>
+							)}
+
+							{syncing
+							? "Syncing..."
+							: "Sync"}
+						</button>
+						</div>
+
+
+						<div className="folder-divider" />
+
+
+						<div className="folder-stats">
+						<div className="folder-stat">
+							<span>
+							Documents
+							</span>
+
+							<strong>
+							{
+								folder.status
+								?.documents
+								?? 0
+							}
+							</strong>
+						</div>
+
+
+						<div className="folder-stat">
+							<span>
+							Indexed
+							</span>
+
+							<strong>
+							{indexed}
+							</strong>
+						</div>
+
+
+						<div className="folder-stat">
+							<span>
+							Pending
+							</span>
+
+							<strong>
+							{pending}
+							</strong>
+						</div>
+
+
+						<div className="folder-stat">
+							<span>
+							Deleted
+							</span>
+
+							<strong>
+							{deleted}
+							</strong>
+						</div>
+
+
+						<div className="folder-stat">
+							<span>
+							Chunks
+							</span>
+
+							<strong>
+							{chunks}
+							</strong>
+						</div>
+						</div>
+
+
+						<div className="folder-footer">
 						<span>
-						Documents
+							Local source
 						</span>
 
-						<strong>
-						{
-							folder.status
-							?.documents
-							?? 0
-						}
-						</strong>
-					</div>
-
-					<div className="folder-stat">
 						<span>
-						Indexed
+							Folder #
+							{folder.id}
 						</span>
-
-						<strong>
-						{indexed}
-						</strong>
-					</div>
-
-					<div className="folder-stat">
-						<span>
-						Pending
-						</span>
-
-						<strong>
-						{pending}
-						</strong>
-					</div>
-
-					<div className="folder-stat">
-						<span>
-						Deleted
-						</span>
-
-						<strong>
-						{deleted}
-						</strong>
-					</div>
-
-					<div className="folder-stat">
-						<span>
-						Chunks
-						</span>
-
-						<strong>
-						{chunks}
-						</strong>
-					</div>
-					</div>
-
-
-					<div className="folder-footer">
-					<span>
-						Local source
-					</span>
-
-					<span>
-						Folder #
-						{folder.id}
-					</span>
-					</div>
-				</article>
-				);
-			},
-			)}
-		</div>
-		</section>
+						</div>
+					</article>
+					);
+				},
+				)}
+			</div>
+			</section>
+		</>
+		)}
 	</main>
 	</div>
 );

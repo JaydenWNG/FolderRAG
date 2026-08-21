@@ -2,11 +2,12 @@
 
 from .database import Base, engine
 from .routers import (
-	ask,
-	folders,
-	index,
-	retrieval,
-	vectors,
+    ask,
+    documents,
+    folders,
+    index,
+    retrieval,
+    vectors,
 )
 
 
@@ -35,6 +36,10 @@ app.include_router(
 
 app.include_router(
 	retrieval.router
+)
+
+app.include_router(
+	documents.router
 )
 
 app.include_router(
